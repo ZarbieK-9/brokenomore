@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 interface SecurityOptionProps {
   title: string;
@@ -26,12 +26,22 @@ const SecurityScreen: React.FC = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack}>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Security</Text>
-        <TouchableOpacity onPress={handleNotification}>
-        </TouchableOpacity>
-      </View>
+                <TouchableOpacity>
+                    <Image
+                      source={require('../../assets/images/back.png')}
+                      style={styles.backIcon}
+                    />
+                  </TouchableOpacity>
+                  <View style={styles.textBoxStyle}>
+                    <Text style={styles.textStyle}>Security</Text>
+                  </View>
+                  <TouchableOpacity>
+                    <Image
+                      source={require('../../assets/images/bell.png')}
+                      style={styles.bellIcon}
+                    />
+                  </TouchableOpacity>
+                </View>
 
       {/* Security Options */}
       <View style={styles.content}>
@@ -54,13 +64,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#00D68F',
   },
-  header: {
-    flexDirection: 'row',
+  textBoxStyle: {
+    marginVertical:30,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 24,
+  },
+  textStyle: {
+    padding: 25,
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#000',
+    letterSpacing: 1.2,
+    textAlign: 'center',
   },
   headerTitle: {
     fontSize: 18,
@@ -91,6 +105,21 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 16,
     color: '#000',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  bellIcon: {
+    width: 35,
+    height: 35,
+    marginHorizontal: 20,
+  },
+  backIcon: {
+    width: 25,
+    height: 25,
+    marginHorizontal: 20,
   },
 });
 
