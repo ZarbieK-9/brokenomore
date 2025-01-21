@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1067035507625",
+    "project_id": "brokenomore-869da",
+    "storage_bucket": "brokenomore-869da.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1067035507625:android:248ec1ceed628bb22562b8",
+        "android_client_info": {
+          "package_name": "com.brokenomore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7KtH-yf0qOWkE3mUS6vmdiOVpxbgH8pQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
