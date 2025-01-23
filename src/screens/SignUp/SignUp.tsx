@@ -14,8 +14,8 @@ import {
   Platform,
 } from 'react-native';
 import {ApplicationStackParamList, MainParamsList} from 'types/navigation';
-
-import {signUp} from 'services/Auth';
+import {addUser, getUser} from 'services/FirestoreService';
+import auth from '@react-native-firebase/auth';
 
 const SignUp = () => {
   const {
@@ -137,12 +137,32 @@ const SignUp = () => {
     }
   };
 
-  const handleSingUp = () => {
-    if (emailError || passwordError || !email || !password) {
-      Alert.alert('Invalid Input', 'Please fix the errors before proceeding.');
-      return signUp(email, password);
+  const handleSignUp = async (email: string, password: string, fullName: string, mobileNumber: string, dateOfBirth: string) => {
+    if (!email || !password) {
+      Alert.alert('Invalid Input', 'Please fill in all fields.');
+      return;
     }
-    handleLoginButtonPress('LoginScreen');
+  
+    try {
+      // Firebase Authentication Sign-Up
+      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+      const userId = userCredential.user.uid;
+  
+      // Add user to Firestore
+      const userData = {
+        fullName,
+        email,
+        mobileNumber,
+        dateOfBirth,
+      };
+  
+      await addUser(userId, userData);
+  
+      Alert.alert('Success', 'Account created successfully!');
+    } catch (error:any) {
+      console.error('Error during signup:', error);
+      Alert.alert('Sign Up Failed', error.message);
+    }
   };
 
   const handleLogin = () => {
@@ -271,7 +291,7 @@ const SignUp = () => {
                     forgotTextStyle
                   }>{`By Continuing, you agree to \nTerms of Service and Privacy Policy`}</Text>
               </View>
-              <TouchableOpacity onPress={handleSingUp} disabled={!isFormValid}>
+              <TouchableOpacity onPress={() => handleSignUp(email, password, name, phone, dob)} disabled={!isFormValid}>
                 <View
                   style={[
                     buttonStyle,
@@ -399,29 +419,6 @@ const styles = StyleSheet.create({
   },
 });
 
-//Firestore Service in signup
-import {addUser, getUser} from 'services/FirestoreService';
-import {Button} from '@react-navigation/elements';
 
-const ExampleScreen = () => {
-  const userId = '12345'; // Replace with a unique identifier for the user
-
-  const handleAddUser = async () => {
-    const userData = {
-      fullName: 'John Doe',
-      email: 'johndoe@example.com',
-      mobileNumber: '1234567890',
-      dateOfBirth: '01-01-1990',
-    };
-    await addUser(userId, userData);
-  };
-
-  const handleGetUser = async () => {
-    const userData = await getUser(userId);
-    if (userData) {
-      console.log('Retrieved user data:', userData);
-    }
-  };
-};
 
 export default SignUp;
