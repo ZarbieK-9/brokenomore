@@ -1,7 +1,6 @@
 import CategoryButton from 'components/CategoryButton';
 import React, { FC, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, ScrollView } from 'react-native';
-
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 
 
 interface Transaction {
@@ -80,22 +79,19 @@ const Categories: FC<CategoriesProps> = () => {
       </View>
      
       <View style={styles.floatStyle}>
-        <ScrollView 
-          contentContainerStyle={styles.categoriesContainer}
-          showsVerticalScrollIndicator={false}
-        >
-          <CategoryButton icon={require('../../assets/images/food.png')} label="Food" />
-          <CategoryButton icon={require('../../assets/images/transport.png')} label="Transport" />
-          <CategoryButton icon={require('../../assets/images/medicine.png')} label="Medicine" />
-          <CategoryButton icon={require('../../assets/images/groceries.png')} label="Groceries" />
-          <CategoryButton icon={require('../../assets/images/rent.png')} label="Rent" />
-          <CategoryButton icon={require('../../assets/images/gift.png')} label="Gifts" />
-          <CategoryButton icon={require('../../assets/images/saving.png')} label="Savings" />
-          <CategoryButton icon={require('../../assets/images/entertainment.png')} label="Entertainment" />
-          <CategoryButton icon={require('../../assets/images/more.png')} label="More" />
-        </ScrollView>
+      <View style={styles.categoriesContainer}>
+        <CategoryButton icon={require('../../assets/images/food.png')} label="Food" />
+        <CategoryButton icon={require('../../assets/images/transport.png')} label="Transport" />
+        <CategoryButton icon={require('../../assets/images/medicine.png')} label="Medicine" />
+        <CategoryButton icon={require('../../assets/images/groceries.png')} label="Groceries" />
+        <CategoryButton icon={require('../../assets/images/rent.png')} label="Rent" />
+        <CategoryButton icon={require('../../assets/images/gift.png')} label="Gifts" />
+        <CategoryButton icon={require('../../assets/images/saving.png')} label="Savings" />
+        <CategoryButton icon={require('../../assets/images/entertainment.png')} label="Entertainment" />
+        <CategoryButton icon={require('../../assets/images/more.png')} label="More" />
       </View>
-    </View> 
+      </View>
+    </View>
   );
 };
 
@@ -192,7 +188,6 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   floatStyle: {
-    flex: 1,
     marginTop: 30,
     backgroundColor: '#fff',
     width: Dimensions.get('window').width,
@@ -201,16 +196,15 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 80,
   },
   categoriesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    padding: 16,
-    paddingBottom: 32,
+    flexDirection: 'row', // Arrange items in a row initially
+    flexWrap: 'wrap', // Allow wrapping to the next row
+    justifyContent: 'space-between', // Space out items evenly
+    padding: 16, // Add some padding around the container
   },
   categoryButton: {
-    width: '30%',
-    marginVertical: 8,
-    alignItems: 'center',
+    width: '30%', // Ensure buttons take up 30% of the container width
+    marginVertical: 8, // Add vertical spacing between rows
+    alignItems: 'center', // Center align button content
   },
 });
 

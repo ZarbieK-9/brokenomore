@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import {ApplicationStackParamList, MainParamsList} from 'types/navigation';
 
-import {signUp, } from 'services/Auth';
+import {signUp} from 'services/Auth';
 
 const SignUp = () => {
   const {
@@ -122,8 +122,6 @@ const SignUp = () => {
       setPasswordError(
         'Password must be at least 8 characters long, include uppercase and lowercase letters, and contain at least one number.',
       );
-     
-      
     } else {
       setPasswordError('');
     }
@@ -142,7 +140,7 @@ const SignUp = () => {
   const handleSingUp = () => {
     if (emailError || passwordError || !email || !password) {
       Alert.alert('Invalid Input', 'Please fix the errors before proceeding.');
-      return  signUp(email, password)
+      return signUp(email, password);
     }
     handleLoginButtonPress('LoginScreen');
   };
@@ -400,5 +398,30 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
 });
+
+//Firestore Service in signup
+import {addUser, getUser} from 'services/FirestoreService';
+import {Button} from '@react-navigation/elements';
+
+const ExampleScreen = () => {
+  const userId = '12345'; // Replace with a unique identifier for the user
+
+  const handleAddUser = async () => {
+    const userData = {
+      fullName: 'John Doe',
+      email: 'johndoe@example.com',
+      mobileNumber: '1234567890',
+      dateOfBirth: '01-01-1990',
+    };
+    await addUser(userId, userData);
+  };
+
+  const handleGetUser = async () => {
+    const userData = await getUser(userId);
+    if (userData) {
+      console.log('Retrieved user data:', userData);
+    }
+  };
+};
 
 export default SignUp;
