@@ -1,24 +1,38 @@
 import auth from '@react-native-firebase/auth';
 
-// Sign up a user
+// Sign up a user and get their token
 export const signUp = async (email: string, password: string) => {
   try {
     const userCredential = await auth().createUserWithEmailAndPassword(
       email,
       password,
     );
-    return userCredential;
+
+    // Get the user's ID token
+    const idToken = await userCredential.user.getIdToken();
+    console.log('User token:', idToken);
+
+    return {userCredential, idToken};
   } catch (error) {
     console.error('Error during sign-up:', error);
     throw error;
   }
 };
 
+// Log in a user and get their token
 export const logIn = async (email: string, password: string) => {
   try {
-    const userCredential = await auth().signInWithEmailAndPassword(email, password);
-    return userCredential;
-  } catch (error:any) {
+    const userCredential = await auth().signInWithEmailAndPassword(
+      email,
+      password,
+    );
+
+    // Get the user's ID token
+    const idToken = await userCredential.user.getIdToken();
+    console.log('User token:', idToken);
+
+    return {userCredential, idToken};
+  } catch (error: any) {
     let errorMessage = 'An error occurred during login.';
     switch (error.code) {
       case 'auth/user-not-found':
@@ -47,9 +61,4 @@ export const logOut = async () => {
     console.error('Error during log-out:', error);
     throw error;
   }
-};
-
-// Listen for authentication state changes
-export const onAuthStateChanged = (callback: (user: any) => void) => {
-  return auth().onAuthStateChanged(callback);
 };
