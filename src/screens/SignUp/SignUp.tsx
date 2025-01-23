@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import {ApplicationStackParamList, MainParamsList} from 'types/navigation';
 
-import {logIn, signUp, } from 'services/Auth';
+import {signUp, } from 'services/Auth';
 
 const SignUp = () => {
   const {

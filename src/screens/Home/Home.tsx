@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import Svg, { Circle, Line, Path } from 'react-native-svg';
+
 
 const initialData = {
   balance: 73453.0,
@@ -13,7 +13,7 @@ const initialData = {
   ],
 };
 
-const Dashboard = () => {
+const Dashboard: React.FC = () => {
   const [data, setData] = useState(initialData);
 
   const renderProgressBar = () => {
@@ -29,32 +29,32 @@ const Dashboard = () => {
   return (
     <ScrollView style={styles.container}>
       <View>
-      <View style={styles.header}>
-        <Text style={styles.title}>Hi, Welcome Back</Text>
-        <Text style={styles.subtitle}>{`Good ${new Date().getHours() < 12 ? 'Morning' : 'Evening'}`}</Text>
-      </View>
-      
-      <View style={styles.rowContainer}>
-        <View style={styles.balanceContainer}>
-          <Text style={styles.balanceText}>Total Balance</Text>
-          <Text style={styles.balanceAmount}>${data.balance.toFixed(2)}</Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>👋 Hi, Welcome Back</Text>
+          <Text style={styles.subtitle}>{`Good ${new Date().getHours() < 12 ? 'Morning 🌅' : 'Evening 🌇'}`}</Text>
         </View>
-        <View style={styles.expenseContainer}>
-          <Text style={styles.expenseText}>Total Expense</Text>
-          <Text style={styles.expenseAmount}>${data.expense.toFixed(2)}</Text>
+        
+        <View style={styles.rowContainer}>
+          <View style={styles.balanceContainer}>
+            <Text style={styles.balanceText}>💰 Total Balance</Text>
+            <Text style={styles.balanceAmount}>${data.balance.toFixed(2)}</Text>
+          </View>
+          <View style={styles.expenseContainer}>
+            <Text style={styles.expenseText}>💸 Total Expense</Text>
+            <Text style={styles.expenseAmount}>${data.expense.toFixed(2)}</Text>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.progressContainer}>
-        {renderProgressBar()}
-        <View style={styles.progressLabels}>
-          <Text style={styles.progressText}>{data.savings}% </Text>
-          <Text style={styles.maxExpenseText}>Savings Goal Achieved</Text>
+        <View style={styles.progressContainer}>
+          {renderProgressBar()}
+          <View style={styles.progressLabels}>
+            <Text style={styles.progressText}>{data.savings}% </Text>
+            <Text style={styles.maxExpenseText}>🎯 Savings Goal Achieved</Text>
+          </View>
         </View>
-      </View>
       </View>
       <View style={styles.floatStyle}>
-
+        {/* Additional content can be added here */}
       </View>
     </ScrollView>
   );
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#000',
+    backgroundColor: 'linear-gradient(90deg, rgba(0,212,255,1) 0%, rgba(9,121,113,1) 100%)',
   },
   progressLabels: {
     flexDirection:'row',
