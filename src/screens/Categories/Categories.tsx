@@ -1,6 +1,6 @@
 import CategoryButton from 'components/CategoryButton';
 import React, { FC, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, ScrollView } from 'react-native';
 
 
 interface Transaction {
@@ -78,7 +78,7 @@ const Categories: FC<CategoriesProps> = () => {
         </View>
       </View>
      
-      <View style={styles.floatStyle}>
+      <ScrollView style={styles.floatStyle}>
       <View style={styles.categoriesContainer}>
         <CategoryButton icon={require('../../assets/images/food.png')} label="Food" />
         <CategoryButton icon={require('../../assets/images/transport.png')} label="Transport" />
@@ -90,7 +90,7 @@ const Categories: FC<CategoriesProps> = () => {
         <CategoryButton icon={require('../../assets/images/entertainment.png')} label="Entertainment" />
         <CategoryButton icon={require('../../assets/images/more.png')} label="More" />
       </View>
-      </View>
+      </ScrollView>
     </View>
   );
 };
