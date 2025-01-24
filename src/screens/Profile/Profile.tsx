@@ -68,7 +68,7 @@ const Profile = () => {
     handleButtonPress('SecurityScreen');
   };
   const handleSettings = () => {
-    handleButtonPress('SettingsScreen');
+    handleButtonPress('SettingScreen');
   };
   const handleHelp = () => {
     handleButtonPress('HelpScreen');

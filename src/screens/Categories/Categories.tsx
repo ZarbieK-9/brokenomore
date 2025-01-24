@@ -1,6 +1,8 @@
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import CategoryButton from 'components/CategoryButton';
-import React, { FC, useState } from 'react';
+import React, { FC, useCallback, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { ApplicationStackParamList, AuthStackParamList } from 'types/navigation';
 
 
 interface Transaction {
@@ -20,11 +22,28 @@ interface Data {
   transactions: Transaction[];
 }
 
+
+
 /**
  * @function Categories
  * @description Displays the categories screen with balance, expenses, and savings information.
  */
 const Categories: FC<CategoriesProps> = () => {
+
+  
+  const navigation = useNavigation<NavigationProp<keyof ApplicationStackParamList>>();
+
+  const handleButtonPress = useCallback(
+    (screenName: keyof AuthStackParamList) => {
+      navigation.navigate(screenName);
+    },
+    [navigation],
+  );
+
+  const handleFood = () => {
+    handleButtonPress('FoodScreen');
+  };
+
   const initialData: Data = {
     balance: 73453.0,
     expense: -23427.4,
@@ -80,15 +99,15 @@ const Categories: FC<CategoriesProps> = () => {
      
       <View style={styles.floatStyle}>
       <View style={styles.categoriesContainer}>
-        <CategoryButton icon={require('../../assets/images/food.png')} label="Food" />
-        <CategoryButton icon={require('../../assets/images/transport.png')} label="Transport" />
-        <CategoryButton icon={require('../../assets/images/medicine.png')} label="Medicine" />
-        <CategoryButton icon={require('../../assets/images/groceries.png')} label="Groceries" />
-        <CategoryButton icon={require('../../assets/images/rent.png')} label="Rent" />
-        <CategoryButton icon={require('../../assets/images/gift.png')} label="Gifts" />
-        <CategoryButton icon={require('../../assets/images/saving.png')} label="Savings" />
-        <CategoryButton icon={require('../../assets/images/entertainment.png')} label="Entertainment" />
-        <CategoryButton icon={require('../../assets/images/more.png')} label="More" />
+        <CategoryButton icon={require('../../assets/images/food.png')} label="Food"  onPress={handleFood}/>
+        <CategoryButton icon={require('../../assets/images/transport.png')} label="Transport"  onPress={handleFood}/>
+        <CategoryButton icon={require('../../assets/images/medicine.png')} label="Medicine" onPress={handleFood}/>
+        <CategoryButton icon={require('../../assets/images/groceries.png')} label="Groceries"onPress={handleFood} />
+        <CategoryButton icon={require('../../assets/images/rent.png')} label="Rent"onPress={handleFood} />
+        <CategoryButton icon={require('../../assets/images/gift.png')} label="Gifts" onPress={handleFood}/>
+        <CategoryButton icon={require('../../assets/images/saving.png')} label="Savings" onPress={handleFood}/>
+        <CategoryButton icon={require('../../assets/images/entertainment.png')} label="Entertainment" onPress={handleFood}/>
+        <CategoryButton icon={require('../../assets/images/more.png')} label="More" onPress={handleFood}/>
       </View>
       </View>
     </View>

@@ -1,33 +1,15 @@
-import React, { FC, useCallback } from 'react';
+import React, { FC } from 'react';
 import { TouchableOpacity, Text, Image, StyleSheet } from 'react-native';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { ApplicationStackParamList, AuthStackParamList } from 'types/navigation';
 
 interface CategoryButtonProps {
-  icon: any;
-  label: string;
+  icon: any; // Icon image source
+  label: string; // Button label
+  onPress: () => void; // Function to handle button press
 }
 
-const CategoryButton: FC<CategoryButtonProps> = ({ icon, label }) => {
-
-
-    const navigation =
-  useNavigation<NavigationProp<keyof ApplicationStackParamList>>();
-
-
-   const handleButtonPress = useCallback(
-      (screenName: keyof AuthStackParamList) => {
-        navigation.navigate(screenName);
-      },
-      [navigation],
-    );
-    
-    const handleEditProfile = () => {
-      handleButtonPress('EditProfileScreen');
-    };
-
+const CategoryButton: FC<CategoryButtonProps> = ({ icon, label, onPress }) => {
   return (
-    <TouchableOpacity style={styles.button} onPress={handleEditProfile}>
+    <TouchableOpacity style={styles.button} onPress={onPress}>
       <Image source={icon} style={styles.icon} />
       <Text style={styles.label}>{label}</Text>
     </TouchableOpacity>

@@ -12,9 +12,10 @@ export {default as CategoriesScreen} from './Categories/Categories';
 export {default as AnalysisScreen} from './Analysis/Analysis';
 export {default as EditProfileScreen} from './EditProfile/EditProfile'
 export {default as SecurityScreen} from './Security/Security'
-export {default as SettingScreen} from './SettingsScreen/Settings'
+export {default as SettingScreen} from './SettingScreen/Settings'
 export {default as NotificationScreen} from './NotificationScreen/NotificationScreen'
 export {default as NotificcationSettingsScreen} from './NotificationSettingsScreen/NotificationSettingsScreen'
 export {default as HelpScreen} from './Help/Help';  
 export {default as ChangePasswordScreen} from './ChangePassword/ChangePassword';        
 export {default as TermsNConditionsScreen} from './TermsNConditions/TermsNConditions';
+export {default as FoodScreen} from './CategoryDetails/Food';

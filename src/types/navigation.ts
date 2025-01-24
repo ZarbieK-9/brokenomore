@@ -16,12 +16,13 @@ export type AuthStackParamList = {
   TransactionsScreen: undefined;
   EditProfileScreen: undefined;
   SecurityScreen: undefined;
-  SettingsScreen: undefined;
+  SettingScreen: undefined;
   HelpScreen: undefined;
   ChangePasswordScreen: undefined;
   TermsNConditionsScreen: undefined;
   NotificationScreen: undefined;
   NotificationSettingsScreen: undefined;
+  FoodScreen: undefined;
 };
 
 export type ApplicationStackParamList = {
