@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
 
-
 const initialData = {
   balance: 73453.0,
   expense: -23427.4,
   savings: 40, // Percentage
+  revenueLastWeek: 4000.0,
+  foodLastWeek: -100.0,
   transactions: [
-    { id: 1, name: 'Salary', date: '18-27 April 30', type: 'Monthly', amount: 4000.0 },
-    { id: 2, name: 'Groceries', date: '17:00 April 24', type: 'Pantry', amount: -100.0 },
-    { id: 3, name: 'Rent', date: '8:30 April 15', type: 'Rent', amount: -674.4 },
+    { id: 1, name: 'Salary', date: '18:27 - April 30', type: 'Monthly', amount: 4000.0 },
+    { id: 2, name: 'Groceries', date: '17:00 - April 24', type: 'Pantry', amount: -100.0 },
+    { id: 3, name: 'Rent', date: '8:30 - April 15', type: 'Rent', amount: -674.4 },
   ],
 };
 
@@ -24,6 +25,17 @@ const Dashboard: React.FC = () => {
         <View style={[styles.progressBarFill, { width: `${progress * 100}%` }]} />
       </View>
     );
+  };
+
+  const renderTransactionList = () => {
+    return data.transactions.map(transaction => (
+      <View key={transaction.id} style={styles.transactionItem}>
+        <Text style={styles.transactionName}>{transaction.name}</Text>
+        <Text style={styles.transactionDate}>{transaction.date}</Text>
+        <Text style={styles.transactionType}>{transaction.type}</Text>
+        <Text style={styles.transactionAmount}>${transaction.amount.toFixed(2)}</Text>
+      </View>
+    ));
   };
 
   return (
@@ -52,9 +64,21 @@ const Dashboard: React.FC = () => {
             <Text style={styles.maxExpenseText}>🎯 Savings Goal Achieved</Text>
           </View>
         </View>
+
+       
       </View>
       <View style={styles.floatStyle}>
-        {/* Additional content can be added here */}
+      <View style={styles.revenueContainer}>
+          <Text style={styles.revenueText}>Revenue Last Week</Text>
+          <Text style={styles.revenueAmount}>${data.revenueLastWeek}</Text>
+          <Text style={styles.foodText}>Food Last Week</Text>
+          <Text style={styles.foodAmount}>${data.foodLastWeek}</Text>
+        </View>
+
+        <View style={styles.transactionListContainer}>
+          <Text style={styles.transactionListTitle}>Monthly Transactions</Text>
+          {renderTransactionList()}
+        </View>
       </View>
     </ScrollView>
   );
@@ -81,7 +105,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingHorizontal: 20,
-
   },
   balanceContainer: {
     alignItems: 'center',
@@ -125,7 +148,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'linear-gradient(90deg, rgba(0,212,255,1) 0%, rgba(9,121,113,1) 100%)',
   },
   progressLabels: {
-    flexDirection:'row',
+    flexDirection: 'row',
     marginTop: 10,
     alignItems: 'center',
   },
@@ -144,6 +167,62 @@ const styles = StyleSheet.create({
     zIndex: 2,
     borderTopLeftRadius: 80,
     borderTopRightRadius: 80,
+  },
+  revenueContainer: {
+    padding: 20,
+    borderRadius: 10,
+    marginVertical: 20,
+  },
+  revenueText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  revenueAmount: {
+    fontSize: 24,
+    color: '#000',
+  },
+  foodText: {
+    fontSize: 16,
+    color: '#000',
+  },
+  foodAmount: {
+    fontSize: 24,
+    color: '#FF0000',
+  },
+  transactionListContainer: {
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+  },
+  transactionListTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 10,
+  },
+  transactionItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e6e6e6',
+  },
+  transactionName: {
+    fontSize: 16,
+    color: '#000',
+  },
+  transactionDate: {
+    fontSize: 14,
+    color: '#888',
+  },
+  transactionType: {
+    fontSize: 14,
+    color: '#888',
+  },
+  transactionAmount: {
+    fontSize: 16,
+    color: '#000',
   },
 });
 

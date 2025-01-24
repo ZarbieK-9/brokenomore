@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, TextInput, Modal } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Svg, { Rect } from 'react-native-svg';
+import { createData } from 'services/firebase/create';
 
 interface Transaction {
   id: number;
@@ -86,17 +87,18 @@ const ExpenseManager: React.FC = () => {
   const savingsPercentage = Math.abs((totalExpense / savingsGoal) * 100);
 
   const handleAddExpense = () => {
-    if (newExpense.name && newExpense.amount) {
-      const newTransaction: Transaction = {
+   //use createData function to add new expense to the database
+    createData('expenses', newExpense);
+    setTransactions([
+      ...transactions,
+      {
         id: transactions.length + 1,
         name: newExpense.name,
-        date: new Date().toISOString(),
+        date: newExpense.date,
         amount: parseFloat(newExpense.amount),
-      };
-      setTransactions([...transactions, newTransaction]);
-      setNewExpense({ name: '', amount: '', date: '', category: '', message: '' });
-      setIsAddingExpense(false);
-    }
+      },
+    ]);
+    setIsAddingExpense(false);
   };
 
   const renderProgressBar = () => (
