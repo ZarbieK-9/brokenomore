@@ -13,8 +13,8 @@ import {
   Alert,
 } from 'react-native';
 import {ApplicationStackParamList, MainParamsList} from 'types/navigation';
+import { logIn } from 'services/Database';
 
-import {logIn, signUp} from 'services/Auth';
 
 const Login = () => {
   const {

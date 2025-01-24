@@ -1,10 +1,7 @@
 import React, {FC} from 'react';
 import Root from 'Root';
 
-// import firbase configuration
-import firebase from '@react-native-firebase/app';
 
-import auth from '@react-native-firebase/auth';
 
 interface IProps {}
 
@@ -16,7 +13,8 @@ interface IProps {}
 const App: FC<IProps> = props => {
   return (
     <>
-      <Root />
+    <Root />
+      
     </>
   );
 };

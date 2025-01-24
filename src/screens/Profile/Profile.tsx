@@ -1,5 +1,5 @@
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import React, {useCallback, useState} from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,10 +11,12 @@ import {
   ScrollView,
   KeyboardAvoidingView,
 } from 'react-native';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker'; // Import the functions
-import { logOut } from 'services/Auth';
-import { ApplicationStackParamList, AuthStackParamList, MainParamsList } from 'types/navigation';
-
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import {  logOut } from 'services/Database';
+import { ApplicationStackParamList, AuthStackParamList } from 'types/navigation';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 const Profile = () => {
   const {
@@ -34,113 +36,128 @@ const Profile = () => {
     textStyle,
   } = styles;
 
+  interface ProfileFormData {
+    username: string;
+    phone: string;
+    email: string;
+    profileImageUri?: string;
+  }
 
-  
+  const [formData, setFormData] = useState<ProfileFormData>({
+    username: '',
+    phone: '',
+    email: '',
+  });
   const [profileImageUri, setProfileImageUri] = useState<string>(
     'https://via.placeholder.com/150',
   );
 
-  const navigation =
-  useNavigation<NavigationProp<keyof ApplicationStackParamList>>();
+  const navigation = useNavigation<NavigationProp<keyof ApplicationStackParamList>>();
 
+  const handleButtonPress = useCallback(
+    (screenName: keyof AuthStackParamList) => {
+      navigation.navigate(screenName);
+    },
+    [navigation],
+  );
 
-   const handleButtonPress = useCallback(
-      (screenName: keyof AuthStackParamList) => {
-        navigation.navigate(screenName);
-      },
-      [navigation],
-    );
-    const handleEditProfile = () => {
-      handleButtonPress('EditProfileScreen');
-    };const handleSecurity = () => {
-      handleButtonPress('SecurityScreen');
-    };const handleSettings = () => {
-      handleButtonPress('SettingsScreen');
-    };const handleHelp = () => {
-      handleButtonPress('HelpScreen');
-    };
+  const handleEditProfile = () => {
+    handleButtonPress('EditProfileScreen');
+  };
+  const handleSecurity = () => {
+    handleButtonPress('SecurityScreen');
+  };
+  const handleSettings = () => {
+    handleButtonPress('SettingsScreen');
+  };
+  const handleHelp = () => {
+    handleButtonPress('HelpScreen');
+  };
 
-
-//Write logout function here
-const handleLogout = () => {
-  Alert.alert('Logout', 'Are you sure you want to logout?', [
-    {text: 'Yes', onPress: () => logOut()},
-    {text: 'No', style: 'cancel'},
-  ]);
-} 
-
-
-  const handleImageChange = () => {
-    Alert.alert('Change Profile Picture', 'Choose an option:', [
-      {text: 'Take a Photo', onPress: handleCameraLaunch},
-      {text: 'Choose from Gallery', onPress: handleGalleryLaunch},
-      {text: 'Cancel', style: 'cancel'},
+  // Logout function
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Yes', onPress: () => logOut() },
+      { text: 'No', style: 'cancel' },
     ]);
   };
 
-  const handleCameraLaunch = () => {
-    launchCamera(
-      {
-        mediaType: 'photo',
-        includeBase64: false,
-        saveToPhotos: true,
-      },
-      response => {
-        if (response.didCancel) {
-          console.log('User cancelled camera picker');
-        } else if (response.errorCode) {
-          Alert.alert('Error', 'Failed to take a picture. Please try again.');
-        } else {
-          if (response.assets && response.assets.length > 0) {
-            const {uri} = response.assets[0];
-            if (uri) {
-              if (uri) {
-                if (uri) {
-                  setProfileImageUri(uri);
-                }
-              }
-            }
-            Alert.alert('Success', 'Profile picture updated!');
-          }
-        }
-      },
-    );
+  // Function to fetch user data from Firestore
+  const getUserFromFirestore = async (userId: string) => {
+    try {
+      const userDocument = await firestore().collection('users').doc(userId).get();
+      if (userDocument.exists) {
+        return userDocument.data();
+        console.log('User data:', userDocument.data());
+      } else {
+        console.log('User data not found');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching user data from Firestore:', error);
+      return null;
+    }
   };
 
-  const handleGalleryLaunch = () => {
-    launchImageLibrary(
-      {
-        mediaType: 'photo',
-        includeBase64: false,
-      },
-      response => {
-        if (response.didCancel) {
-          console.log('User cancelled gallery picker');
-        } else if (response.errorCode) {
-          Alert.alert('Error', 'Failed to select a picture. Please try again.');
-        } else {
-          if (response.assets && response.assets.length > 0) {
-            const {uri} = response.assets[0];
-            if (uri) {
-              if (uri) {
-                if (uri) {
-                  setProfileImageUri(uri);
-                }
-              }
-            }
-            Alert.alert('Success', 'Profile picture updated!');
-          }
-        }
-      },
-    );
+  // Function to fetch current logged-in user's data
+  const getUser = async () => {
+    try {
+      const currentUser = auth().currentUser;
+      if (currentUser) {
+        const userId = currentUser.uid;
+        const userData = await getUserFromFirestore(userId);
+        return userData;
+      } else {
+        console.log('No user is logged in');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
   };
+
+  useEffect(() => {
+    // Function to load user data
+    const loadProfileData = async () => {
+      const userData = await getUser();
+      if (userData) {
+        setFormData({
+          username: userData.fullName || '',
+          phone: userData.mobileNumber || '',
+          email: userData.email || '',
+          profileImageUri: userData.profileImageUri || '',
+        });
+        console.log('User data:', userData);
+  
+        // Optionally load profile image from AsyncStorage if saved there
+        const storedImageUri = await AsyncStorage.getItem('profileImageUri');
+        if (storedImageUri) {
+          setProfileImageUri(storedImageUri);
+        }
+      }
+    };
+  
+    // Load user data initially
+    loadProfileData();
+  
+    // Set up interval to refresh data every second (1000 milliseconds)
+    const intervalId = setInterval(() => {
+      loadProfileData();
+    }, 1000); // 1000ms = 1 second
+  
+    // Clear the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, []);
+  
+
+
 
   return (
     <KeyboardAvoidingView behavior="padding">
       <ScrollView>
         <View style={container}>
           <View style={header}>
-          <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
               <Image
                 source={require('../../assets/images/back.png')}
                 style={backIcon}
@@ -157,15 +174,13 @@ const handleLogout = () => {
             </TouchableOpacity>
           </View>
           <View style={floatStyle}>
-            <TouchableOpacity onPress={handleImageChange}>
-              <Image source={{uri: profileImageUri}} style={profileImage} />
+            <TouchableOpacity>
+              <Image source={{ uri: profileImageUri }} style={profileImage} />
             </TouchableOpacity>
-            <Text style={profileName}>John Smith</Text>
-            <Text style={profileId}>ID: 25030024</Text>
+            <Text style={profileName}>{formData.username || 'John Smith'}</Text>
+            <Text style={profileId}>{formData.email || 'ID: 25030024'}</Text>
             <View style={menuContainer}>
-              <TouchableOpacity style={menuItem} onPress={
-                handleEditProfile
-              }>
+              <TouchableOpacity style={menuItem} onPress={handleEditProfile}>
                 <Image
                   source={require('../../assets/images/user.png')}
                   style={menuIcon}
@@ -182,14 +197,14 @@ const handleLogout = () => {
               </TouchableOpacity>
 
               <TouchableOpacity style={menuItem} onPress={handleSettings}>
-                <Image 
+                <Image
                   source={require('../../assets/images/setting.png')}
                   style={menuIcon}
                 />
                 <Text style={menuText}>Settings</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={menuItem}onPress={handleHelp}>
+              <TouchableOpacity style={menuItem} onPress={handleHelp}>
                 <Image
                   source={require('../../assets/images/help.png')}
                   style={menuIcon}
@@ -197,9 +212,7 @@ const handleLogout = () => {
                 <Text style={menuText}>Help</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={menuItem} onPress={
-                handleLogout
-              }>
+              <TouchableOpacity style={menuItem} onPress={handleLogout}>
                 <Image
                   source={require('../../assets/images/logout.png')}
                   style={menuIcon}
@@ -223,7 +236,7 @@ const styles = StyleSheet.create({
     marginTop: -50,
   },
   textBoxStyle: {
-    marginVertical:30,
+    marginVertical: 30,
     alignItems: 'center',
   },
   textStyle: {

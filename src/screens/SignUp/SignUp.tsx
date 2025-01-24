@@ -13,9 +13,11 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ApplicationStackParamList, MainParamsList} from 'types/navigation';
-import {addUser, getUser} from 'services/FirestoreService';
 import auth from '@react-native-firebase/auth';
+import { addUser } from 'services/Database';
 
 const SignUp = () => {
   const {
@@ -111,7 +113,6 @@ const SignUp = () => {
     if (formattedValue.length === 10 && !validateDob(formattedValue)) {
       Alert.alert(
         'Invalid Date of Birth',
-        'Please ensure the date is in DD/MM/YYYY format and within a valid range.',
       );
     }
   };
@@ -137,6 +138,7 @@ const SignUp = () => {
     }
   };
 
+
   const handleSignUp = async (email: string, password: string, fullName: string, mobileNumber: string, dateOfBirth: string) => {
     if (!email || !password) {
       Alert.alert('Invalid Input', 'Please fill in all fields.');
@@ -154,16 +156,29 @@ const SignUp = () => {
         email,
         mobileNumber,
         dateOfBirth,
+        profileImageUri: '',
       };
   
       await addUser(userId, userData);
   
+      // Store the data in AsyncStorage
+      const userStorageData = {
+        idToken: await userCredential.user.getIdToken(),
+        email: userCredential.user.email,
+        fullName: fullName,
+        mobileNumber: mobileNumber,
+        dateOfBirth: dateOfBirth,
+      };
+  
+      await AsyncStorage.setItem('userData', JSON.stringify(userStorageData));
+  
       Alert.alert('Success', 'Account created successfully!');
-    } catch (error:any) {
+    } catch (error: any) {
       console.error('Error during signup:', error);
       Alert.alert('Sign Up Failed', error.message);
     }
   };
+  
 
   const handleLogin = () => {
     handleLoginButtonPress('LoginScreen');
