@@ -14,10 +14,10 @@ import {
 } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { AuthStackParamList } from 'types/navigation';
+import { ApplicationStackParamList, AuthStackParamList } from 'types/navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+import { api_url } from 'services/config';
+import axios from 'axios';
 
 // Profile data interface
 interface ProfileFormData {
@@ -28,8 +28,8 @@ interface ProfileFormData {
 }
 
 const EditProfile: React.FC = () => {
-  const navigation = useNavigation<NavigationProp<keyof AuthStackParamList>>();
-  const [profileImageUri, setProfileImageUri] = useState<string>('https://via.placeholder.com/150');
+  
+  const [profileImageUri, setProfileImageUri] = useState<string>('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Flh3.googleusercontent.com%2FX8LuYsGddUvyGns8yNt3lsqXU-etopUi9saFCQ-VMIImDW0plr-ZvBRjhnKh4V2r6UEMaBMXUBkJSD_RrHbWdmIp2RUnVJgcbiJ_S3l_kOAseWWI6JiLccLcL0cRFpnba-n4bjlOW3FvHbHdMs_ToZE&f=1&nofb=1&ipt=29db0a03ea18c946c793550d2f34f5da8eeb699c75dc629be05a67405b51bd6f&ipo=images');
   const [formData, setFormData] = useState<ProfileFormData>({
     username: '',
     phone: '',
@@ -37,68 +37,65 @@ const EditProfile: React.FC = () => {
     
   });
 
-  // Function to fetch user data from Firestore
-  const getUserFromFirestore = async (userId: string) => {
-    try {
-      const userDocument = await firestore().collection('users').doc(userId).get();
-      if (userDocument.exists) {
-        return userDocument.data();
-      } else {
-        console.log('User data not found');
-        return null;
-      }
-    } catch (error) {
-      console.error('Error fetching user data from Firestore:', error);
-      return null;
-    }
-  };
+   const navigation =
+      useNavigation<NavigationProp<keyof ApplicationStackParamList>>();
 
-  // Function to fetch current logged-in user's data
-  const getUser = async () => {
-    try {
-      const currentUser = auth().currentUser;
-      if (currentUser) {
-        const userId = currentUser.uid;
-        const userData = await getUserFromFirestore(userId);
-        return userData;
-      } else {
-        console.log('No user is logged in');
-        return null;
-      }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    }
-  };
-
-  // Load user data on component mount
-  useEffect(() => {
-    const loadProfileData = async () => {
-      const userData = await getUser();
-      if (userData) {
-        setFormData({
-          username: userData.fullName || '',
-          phone: userData.mobileNumber || '',
-          email: userData.email || '',
-       
-        });
-        console.log('User data:', userData);
-        // Optionally load profile image from Firestore if saved there
-        const storedImageUri = await AsyncStorage.getItem('profileImageUri');
-        if (storedImageUri) {
-          setProfileImageUri(storedImageUri);
-        }
-      }
-    };
-
-    loadProfileData();
-  }, []);
-
-  const handleNavigationPress = useCallback(
+ const handleButtonPress = useCallback(
     (screenName: keyof AuthStackParamList) => {
       navigation.navigate(screenName);
     },
     [navigation],
   );
+
+  const handleUpdateProfileButtonPress = () => {
+    handleButtonPress('TabsScreen');
+  };
+
+  const [userDetails, setUserDetails] = useState<{
+    dateOfBirth: string;
+    email: string;
+    fullName: string;
+    id: string;
+    phoneNumber: string;
+    profilePicture?: string;
+  }>({
+    dateOfBirth: '',
+    email: '',
+    fullName: '',
+    id: '',
+    phoneNumber: '',
+  });
+  // Load user data on component mount
+  useEffect(() => {
+    const loadProfileData = async () => {
+      const userId = await AsyncStorage.getItem('userId');
+      console.log('User ID:', userId);
+      const parsedUserId = userId ? JSON.parse(userId) : null;
+      try {
+        const url = `${api_url}/user/${parsedUserId}`;
+
+        axios
+          .get(url)
+          .then(response => {
+            console.log('Success:', response.data);
+            setUserDetails(response.data);
+            console.log('User Details in edit:', userDetails);
+          })
+          .catch(error => {
+            console.error(
+              'Error:',
+              error.response ? error.response.data : error.message,
+            );
+          });
+      } catch (error: any) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    // Load user data initially
+    loadProfileData();
+  }, []);
+
 
   
   // Function to handle profile picture change
@@ -129,8 +126,7 @@ const EditProfile: React.FC = () => {
               // Store the URI in AsyncStorage
               await AsyncStorage.setItem('profileImageUri', uri);
               setProfileImageUri(uri); // Update state
-              await updateProfileImageInFirestore(uri); // Update Firestore with the image URL
-              Alert.alert('Success', 'Profile picture updated!');
+         
             }
           }
         }
@@ -156,8 +152,7 @@ const EditProfile: React.FC = () => {
            //store only after edit profile button is pressed else dont
               await AsyncStorage.setItem('profileImageUri', uri);
               setProfileImageUri(uri); // Update state
-              await updateProfileImageInFirestore(uri); // Update Firestore with the image URL
-              Alert.alert('Success', 'Profile picture updated!');
+           
               
             }
           }
@@ -166,56 +161,59 @@ const EditProfile: React.FC = () => {
     );
   };
   
-  // Function to update Firestore with the image URL from AsyncStorage
-  const updateProfileImageInFirestore = async (uri: string) => {
-    const currentUser = auth().currentUser;
   
-    if (currentUser) {
-      const userId = currentUser.uid;
   
-      try {
-        // Update Firestore with the new profile image URL
-        await firestore().collection('users').doc(userId).update({
-          profileImageUrl: uri,
-        });
-      } catch (error) {
-        console.error('Error updating Firestore with image URL:', error);
-        Alert.alert('Error', 'Failed to update Firestore with the image URL.');
-      }
-    } else {
-      Alert.alert('Error', 'No user is logged in.');
-    }
-  };
-  
+  const [isFormValid, setIsFormValid] = useState(false);
 
+  // Check if all fields are filled
+  useEffect(() => {
+    setIsFormValid(
+      formData.username.trim() !== '' &&
+      formData.phone.trim() !== '' &&
+      formData.email.trim() !== ''
+    );
+  }, [formData]);
 
-  const handleUpdateProfile = () => {
-    // Ensure formData has no undefined values
-    const currentUser = auth().currentUser;
-    if (currentUser) {
-      const userId = currentUser.uid;
-  
-      // Set default values for undefined fields
-      const updatedProfileData = {
-        fullName: formData.username || '',  // Default to empty string if undefined
-        mobileNumber: formData.phone || '', // Default to empty string if undefined
-        email: formData.email || '',         // Default to empty string if undefined
-      };
-  
-      firestore()
-        .collection('users')
-        .doc(userId)
-        .update(updatedProfileData)
-        .then(() => {
-          Alert.alert('Success', 'Profile updated successfully!');
-        })
-        .catch(error => {
-          console.error('Error updating profile:', error);
-          Alert.alert('Error', 'Failed to update profile. Please try again.');
-        });
-    } else {
-      console.log('No user is logged in');
+  const handleUpdateProfile = async () => {
+    if (!isFormValid) {
+      Alert.alert('Error', 'All fields are required.');
+      return;
     }
+  
+  try {
+    // Retrieve user ID from AsyncStorage
+    const userId = await AsyncStorage.getItem('userId');
+    const parsedUserId = userId ? JSON.parse(userId) : null;
+    
+    if (!parsedUserId) {
+      Alert.alert('Error', 'User ID not found. Please try again.');
+      return;
+    }
+    
+    const url = `${api_url}/user/${parsedUserId}`;
+    
+    const payload = {
+      fullName: formData.username,
+      mobileNumber: formData.phone,
+      email: formData.email,
+      profileImageUrl: profileImageUri, // Ensure this is set if an image is uploaded
+    };
+
+    console.log('Updating profile with:', payload);
+
+    const response = await axios.put(url, payload);
+    
+    if (response.status === 200) {
+      Alert.alert('Success', 'Profile updated successfully!');
+      handleUpdateProfileButtonPress();
+    } else {
+      Alert.alert('Error', 'Failed to update profile. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    Alert.alert('Error', 'An error occurred while updating profile.');
+  }
+
   };
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>

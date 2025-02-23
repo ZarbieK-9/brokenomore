@@ -1,7 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import MyTabs from 'navigation/TabNav/TabNav'
 import React, { FC } from 'react'
-import { EditProfileScreen, FoodScreen, HomeScreen, NotificationScreen, SecurityScreen, SettingScreen, } from 'screens'
+import { AddExpenseScreen, EditProfileScreen, FoodScreen, HomeScreen, NotificationScreen, SecurityScreen, SettingScreen, } from 'screens'
 
 import { AuthStackParamList } from 'types/navigation'
 
@@ -25,6 +25,7 @@ const Stack=createNativeStackNavigator<AuthStackParamList>()
   <Stack.Screen name = "SettingScreen" component ={SettingScreen}/>
   <Stack.Screen name = "NotificationScreen" component={NotificationScreen} />
 <Stack.Screen name = "FoodScreen" component={FoodScreen} /> 
+<Stack.Screen name = "AddExpenseScreen" component={AddExpenseScreen} />
 
   </Stack.Navigator>
   )

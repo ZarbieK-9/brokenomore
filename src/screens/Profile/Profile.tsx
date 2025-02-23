@@ -1,22 +1,25 @@
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState, useCallback } from 'react';
+import {NavigationProp, useNavigation} from '@react-navigation/native';
+import React, {useEffect, useState, useCallback} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Image,
-  Alert,
   Dimensions,
   ScrollView,
   KeyboardAvoidingView,
 } from 'react-native';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import {  logOut } from 'services/Database';
-import { ApplicationStackParamList, AuthStackParamList } from 'types/navigation';
+
+import {
+  ApplicationStackParamList,
+  AuthStackParamList,
+  MainParamsList,
+} from 'types/navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+
+import axios from 'axios';
+import {api_url} from 'services/config';
 
 const Profile = () => {
   const {
@@ -48,11 +51,12 @@ const Profile = () => {
     phone: '',
     email: '',
   });
-  const [profileImageUri, setProfileImageUri] = useState<string>(
-    'https://via.placeholder.com/150',
-  );
 
-  const navigation = useNavigation<NavigationProp<keyof ApplicationStackParamList>>();
+  const defaultProfileImage =
+    'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Flh3.googleusercontent.com%2FX8LuYsGddUvyGns8yNt3lsqXU-etopUi9saFCQ-VMIImDW0plr-ZvBRjhnKh4V2r6UEMaBMXUBkJSD_RrHbWdmIp2RUnVJgcbiJ_S3l_kOAseWWI6JiLccLcL0cRFpnba-n4bjlOW3FvHbHdMs_ToZE&f=1&nofb=1&ipt=29db0a03ea18c946c793550d2f34f5da8eeb699c75dc629be05a67405b51bd6f&ipo=images';
+
+  const navigation =
+    useNavigation<NavigationProp<keyof ApplicationStackParamList>>();
 
   const handleButtonPress = useCallback(
     (screenName: keyof AuthStackParamList) => {
@@ -61,8 +65,19 @@ const Profile = () => {
     [navigation],
   );
 
+  const handleLogoutButtonPress = useCallback(
+    (screenName: keyof ApplicationStackParamList) => {
+      navigation.navigate(screenName);
+    },
+    [navigation],
+  );
+
   const handleEditProfile = () => {
     handleButtonPress('EditProfileScreen');
+  };
+
+  const handleNotification = () => {
+    handleButtonPress('NotificationScreen');  
   };
   const handleSecurity = () => {
     handleButtonPress('SecurityScreen');
@@ -74,83 +89,66 @@ const Profile = () => {
     handleButtonPress('HelpScreen');
   };
 
-  // Logout function
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Yes', onPress: () => logOut() },
-      { text: 'No', style: 'cancel' },
-    ]);
+    // Log out user from the app
+    AsyncStorage.removeItem('userId');
+    AsyncStorage.removeItem('token');
+
+    handleLogoutButtonPress('Main');
   };
 
-  // Function to fetch user data from Firestore
-  const getUserFromFirestore = async (userId: string) => {
-    try {
-      const userDocument = await firestore().collection('users').doc(userId).get();
-      if (userDocument.exists) {
-        return userDocument.data();
-        console.log('User data:', userDocument.data());
-      } else {
-        console.log('User data not found');
-        return null;
-      }
-    } catch (error) {
-      console.error('Error fetching user data from Firestore:', error);
-      return null;
-    }
-  };
+  const [userDetails, setUserDetails] = useState<{
+    dateOfBirth: string;
+    email: string;
+    fullName: string;
+    id: string;
+    phoneNumber: string;
+    profilePicture?: string;
+  }>({
+    dateOfBirth: '',
+    email: '',
+    fullName: '',
+    id: '',
+    phoneNumber: '',
+    profilePicture: '',
+  });
+  // Use profile picture from API if available, else fallback to default
+  const profileImageUri =
+    userDetails.profilePicture && userDetails.profilePicture.trim() !== ''
+      ? userDetails.profilePicture
+      : defaultProfileImage;
 
-  // Function to fetch current logged-in user's data
-  const getUser = async () => {
-    try {
-      const currentUser = auth().currentUser;
-      if (currentUser) {
-        const userId = currentUser.uid;
-        const userData = await getUserFromFirestore(userId);
-        return userData;
-      } else {
-        console.log('No user is logged in');
-        return null;
-      }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    }
-  };
+  console.log('Profile Image:', userDetails.profilePicture);
 
   useEffect(() => {
     // Function to load user data
     const loadProfileData = async () => {
-      const userData = await getUser();
-      if (userData) {
-        setFormData({
-          username: userData.fullName || '',
-          phone: userData.mobileNumber || '',
-          email: userData.email || '',
-          profileImageUri: userData.profileImageUri || '',
-        });
-        console.log('User data:', userData);
-  
-        // Optionally load profile image from AsyncStorage if saved there
-        const storedImageUri = await AsyncStorage.getItem('profileImageUri');
-        if (storedImageUri) {
-          setProfileImageUri(storedImageUri);
-        }
+      const userId = await AsyncStorage.getItem('userId');
+      console.log('User ID:', userId);
+      const parsedUserId = userId ? JSON.parse(userId) : null;
+      try {
+        const url = `${api_url}/user/${parsedUserId}`;
+
+        axios
+          .get(url)
+          .then(response => {
+            console.log('Success:', response.data);
+            setUserDetails(response.data);
+          })
+          .catch(error => {
+            console.error(
+              'Error:',
+              error.response ? error.response.data : error.message,
+            );
+          });
+      } catch (error: any) {
+        console.error('Error fetching user data:', error);
       }
     };
-  
+
     // Load user data initially
     loadProfileData();
-  
-    // Set up interval to refresh data every second (1000 milliseconds)
-    const intervalId = setInterval(() => {
-      loadProfileData();
-    }, 1000); // 1000ms = 1 second
-  
-    // Clear the interval when the component unmounts
-    return () => clearInterval(intervalId);
   }, []);
-  
-
-
 
   return (
     <KeyboardAvoidingView behavior="padding">
@@ -166,7 +164,7 @@ const Profile = () => {
             <View style={textBoxStyle}>
               <Text style={textStyle}>Profile</Text>
             </View>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handleNotification}> 
               <Image
                 source={require('../../assets/images/bell.png')}
                 style={bellIcon}
@@ -175,10 +173,12 @@ const Profile = () => {
           </View>
           <View style={floatStyle}>
             <TouchableOpacity>
-              <Image source={{ uri: profileImageUri }} style={profileImage} />
+              <Image source={{uri: profileImageUri}} style={profileImage} />
             </TouchableOpacity>
-            <Text style={profileName}>{formData.username || 'John Smith'}</Text>
-            <Text style={profileId}>{formData.email || 'ID: 25030024'}</Text>
+            <Text style={profileName}>
+              {userDetails.fullName || 'John Smith'}
+            </Text>
+            <Text style={profileId}>{userDetails.email || 'ID: 25030024'}</Text>
             <View style={menuContainer}>
               <TouchableOpacity style={menuItem} onPress={handleEditProfile}>
                 <Image

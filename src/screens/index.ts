@@ -19,3 +19,4 @@ export {default as HelpScreen} from './Help/Help';
 export {default as ChangePasswordScreen} from './ChangePassword/ChangePassword';        
 export {default as TermsNConditionsScreen} from './TermsNConditions/TermsNConditions';
 export {default as FoodScreen} from './CategoryDetails/Food';
+export {default as AddExpenseScreen} from './AddExpense/AddExpense';

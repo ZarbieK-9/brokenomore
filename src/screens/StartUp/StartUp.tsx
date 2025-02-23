@@ -1,8 +1,10 @@
-import { CommonActions } from '@react-navigation/native'
+
 import React, { FC, useEffect } from 'react'
 import { View, Text, StyleSheet, Image } from 'react-native'
 import { ApplicationScreenProps } from 'types/navigation'
-
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { CommonActions } from '@react-navigation/native'
+import axios from 'axios'
 interface IProps {}
 
 /**
@@ -11,15 +13,29 @@ interface IProps {}
 **/
 
 
-const StartUp = ({navigation}:ApplicationScreenProps):React.JSX.Element => { 
-    useEffect(() => {
-    setTimeout(() => {
-      navigation.dispatch(
-        CommonActions.reset({
+const StartUp = ({navigation}:ApplicationScreenProps):React.JSX.Element => {   
+  useEffect(() => {
+    const fetchToken = async () => {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        navigation.dispatch(
+          CommonActions.reset({
             index: 0,
-            routes: [{ name: 'OnBoardingScreen1' }],
-        }))
-    }, 2000)
+            routes: [{name: 'Auth'}],
+          }),
+        );
+      } else{
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{name: 'OnBoardingScreen1'}],
+          }),
+        );
+      }
+    };
+
+    fetchToken();
     }, [])
 
 const { container,imageStyle,textStyle } = styles

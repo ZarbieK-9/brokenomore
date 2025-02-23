@@ -13,8 +13,10 @@ import {
   Alert,
 } from 'react-native';
 import {ApplicationStackParamList, MainParamsList} from 'types/navigation';
-import { logIn } from 'services/Database';
 
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api_url } from 'services/config';
 
 const Login = () => {
   const {
@@ -100,19 +102,37 @@ const Login = () => {
       Alert.alert('Invalid Input', errorMsg);
       return;
     }
-  
+
     setIsLoading(true); // Set a loading state
     try {
-      const userCredential = await logIn(email, password);
-      Alert.alert('Success', 'Login successful!');
-      handleButtonPress('Auth'); // Pass user data if necessary
-    } catch (error:any) {
+      const url =
+        `${api_url}/user/loginuser`;
+      const payload = {
+        email: email,
+        password: password,
+      };
+
+      axios
+        .post(url, payload)
+        .then(response => {
+          console.log('Success:', response.data);
+          AsyncStorage.setItem('token', response.data.token);
+          AsyncStorage.setItem('userId', JSON.stringify(response.data.id));
+          handleButtonPress('Auth'); // Pass user data if necessary
+        })
+        .catch(error => {
+          console.error(
+            'Error:',
+            error.response ? error.response.data : error.message,
+          );
+        });
+    } catch (error: any) {
       Alert.alert('Login Failed', error.message);
     } finally {
       setIsLoading(false); // Reset loading state
     }
   };
-  
+
   const handleSignUp = () => {
     handleSingUpButtonPress('SignUpScreen');
   };

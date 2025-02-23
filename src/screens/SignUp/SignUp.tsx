@@ -13,11 +13,9 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ApplicationStackParamList, MainParamsList} from 'types/navigation';
-import auth from '@react-native-firebase/auth';
-import { addUser } from 'services/Database';
+import axios from 'axios';
+import {api_url} from 'services/config';
 
 const SignUp = () => {
   const {
@@ -111,9 +109,7 @@ const SignUp = () => {
 
     // Validate only if the input is complete
     if (formattedValue.length === 10 && !validateDob(formattedValue)) {
-      Alert.alert(
-        'Invalid Date of Birth',
-      );
+      Alert.alert('Invalid Date of Birth');
     }
   };
 
@@ -138,47 +134,48 @@ const SignUp = () => {
     }
   };
 
-
-  const handleSignUp = async (email: string, password: string, fullName: string, mobileNumber: string, dateOfBirth: string) => {
+  const handleSignUp = async (
+    email: string,
+    password: string,
+    fullName: string,
+    mobileNumber: string,
+    dateOfBirth: string,
+  ) => {
     if (!email || !password) {
       Alert.alert('Invalid Input', 'Please fill in all fields.');
       return;
     }
-  
+
     try {
-      // Firebase Authentication Sign-Up
-      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
-      const userId = userCredential.user.uid;
-  
-      // Add user to Firestore
-      const userData = {
-        fullName,
-        email,
-        mobileNumber,
-        dateOfBirth,
-        profileImageUri: '',
-      };
-  
-      await addUser(userId, userData);
-  
-      // Store the data in AsyncStorage
-      const userStorageData = {
-        idToken: await userCredential.user.getIdToken(),
-        email: userCredential.user.email,
+      const url = `${api_url}/user/createuser`;
+      const payload = {
         fullName: fullName,
         mobileNumber: mobileNumber,
+        email: email,
         dateOfBirth: dateOfBirth,
+        profilePicture: '',
+        password: password,
       };
-  
-      await AsyncStorage.setItem('userData', JSON.stringify(userStorageData));
-  
-      Alert.alert('Success', 'Account created successfully!');
+
+      axios
+        .post(url, payload)
+        .then(response => {
+          console.log('Success:', response.data);
+
+          Alert.alert('Success', 'Account created successfully!');
+          handleLoginButtonPress('LoginScreen');
+        })
+        .catch(error => {
+          console.error(
+            'Error:',
+            error.response ? error.response.data : error.message,
+          );
+        });
     } catch (error: any) {
       console.error('Error during signup:', error);
       Alert.alert('Sign Up Failed', error.message);
     }
   };
-  
 
   const handleLogin = () => {
     handleLoginButtonPress('LoginScreen');
@@ -306,7 +303,9 @@ const SignUp = () => {
                     forgotTextStyle
                   }>{`By Continuing, you agree to \nTerms of Service and Privacy Policy`}</Text>
               </View>
-              <TouchableOpacity onPress={() => handleSignUp(email, password, name, phone, dob)} disabled={!isFormValid}>
+              <TouchableOpacity
+                onPress={() => handleSignUp(email, password, name, phone, dob)}
+                disabled={!isFormValid}>
                 <View
                   style={[
                     buttonStyle,
@@ -433,7 +432,5 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
 });
-
-
 
 export default SignUp;

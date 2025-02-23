@@ -23,6 +23,7 @@ export type AuthStackParamList = {
   NotificationScreen: undefined;
   NotificationSettingsScreen: undefined;
   FoodScreen: undefined;
+  AddExpenseScreen: undefined;
 };
 
 export type ApplicationStackParamList = {
